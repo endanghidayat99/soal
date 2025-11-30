@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kuis Kelas 2 SD Multi Mapel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .nice-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #f97316 #ffedd5;
+        }
+        .nice-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .nice-scrollbar::-webkit-scrollbar-track {
+            background: #ffedd5;
+        }
+        .nice-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #f97316;
+            border-radius: 9999px;
+        }
+        .focus-ring:focus-visible {
+            outline: 3px solid #f97316;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="w-full h-full m-0 p-0">
+    <div class="w-full min-h-full bg-orange-100 flex flex-col items-center justify-start py-6 px-4">
+        <div class="w-full max-w-5xl bg-white/80 rounded-3xl shadow-xl border border-orange-200 flex flex-col min-h-full">
+            <!-- Header -->
+            <header class="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-6 pt-6 pb-4 border-b border-orange-200 bg-gradient-to-r from-orange-100 to-amber-100 rounded-t-3xl">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 4h8a3 3 0 0 1 3 3v13H7a3 3 0 0 0-3 3V4z" fill="currentColor" opacity="0.15"/>
+                            <path d="M4 4h8a3 3 0 0 1 3 3v15"/>
+                            <path d="M4 8h11"/>
+                            <path d="M9 12h3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-orange-700 leading-snug">Kuis Ceria Kelas 2 SD</h1>
+                        <p class="text-sm md:text-base text-orange-700/80 mt-1">Pilih mata pelajaran, jawab 20 soal pilihan ganda, dan lihat nilai kamu!</p>
+                    </div>
+                </div>
+                <div class="px-4 py-2 rounded-2xl bg-white/80 border border-orange-200 text-xs md:text-sm text-orange-700 shadow-sm">
+                    <p><span class="font-semibold">Tingkat:</span> Kelas 2 SD</p>
+                    <p><span class="font-semibold">Mode:</span> Latihan Soal</p>
+                </div>
+            </header>
+            
+            <main class="flex-1 flex flex-col md:flex-row">
+                <!-- Sidebar Rekap -->
+                <aside class="w-full md:w-64 border-r border-orange-100 bg-orange-50/60 px-4 py-4 flex flex-col gap-4">
+                    <h2 class="text-lg font-semibold text-orange-800 flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 text-white text-xs font-bold">i</span>
+                        Rekap Nilai
+                    </h2>
+                    <div id="summary-container" class="flex flex-col gap-3 text-sm text-orange-900"></div>
+                    <div class="mt-2 p-3 rounded-2xl bg-white/80 border border-orange-200 text-xs text-orange-700">
+                        <p class="font-semibold mb-1">Keterangan:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Jawab semua soal di tiap mata pelajaran.</li>
+                            <li>Tekan tombol <span class="font-semibold">Selesai</span> untuk melihat nilai.</li>
+                            <li>Rekap nilai akan muncul di sini untuk semua mata pelajaran.</li>
+                        </ul>
+                    </div>
+                </aside>
+                
+                <!-- Konten Kuis -->
+                <section class="flex-1 flex flex-col px-4 py-4 gap-4 overflow-hidden">
+                    <!-- Tabs Mapel -->
+                    <nav class="w-full flex flex-wrap gap-2 mb-1" id="subject-tabs"></nav>
+                    
+                    <!-- Info Mapel & Progress -->
+                    <div class="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-white/90 border border-orange-200 rounded-2xl px-4 py-3 shadow-sm">
+                        <div>
+                            <h2 id="subject-title" class="text-lg font-semibold text-orange-800"></h2>
+                            <p id="subject-desc" class="text-xs md:text-sm text-orange-700 mt-1"></p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs md:text-sm text-orange-800">
+                            <span class="font-semibold">Progres:</span>
+                            <div class="w-32 md:w-40 h-3 bg-orange-100 rounded-full overflow-hidden border border-orange-200">
+                                <div id="progress-bar" class="h-full bg-orange-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <span id="progress-text" class="font-semibold">0 / 20</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Area Soal -->
+                    <div class="flex-1 min-h-0 bg-white/90 border border-orange-200 rounded-2xl shadow-inner px-4 py-3 flex flex-col gap-3">
+                        <div id="questions-container" class="flex-1 overflow-auto nice-scrollbar pr-1"></div>
+                        
+                        <!-- Tombol Aksi -->
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-t border-orange-100 pt-3 mt-1">
+                            <div class="flex flex-wrap gap-2 text-xs md:text-sm">
+                                <button id="reset-subject-btn" class="focus-ring px-3 py-2 rounded-xl bg-orange-50 text-orange-800 border border-orange-300 hover:bg-orange-100 transition-colors">
+                                    Ulangi Mapel Ini
+                                </button>
+                                <button id="show-answers-btn" class="focus-ring px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors">
+                                    Tampilkan Kunci Sementara
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <p id="subject-score-text" class="text-sm md:text-base font-semibold text-orange-800">Nilai: -</p>
+                                <button id="finish-subject-btn" class="focus-ring px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 transition-colors">
+                                    Selesai Mapel Ini
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ringkasan Akhir -->
+                    <div class="w-full bg-gradient-to-r from-amber-100 to-orange-100 border border-orange-200 rounded-2xl px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-sm md:text-base font-semibold text-orange-900">Rekap Akhir Semua Mapel</h3>
+                            <p class="text-xs md:text-sm text-orange-800 mt-1">Setelah menyelesaikan semua mata pelajaran, kamu bisa melihat rata-rata nilai di sini.</p>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-start md:items-center gap-2 text-xs md:text-sm">
+                            <p id="overall-average-text" class="font-semibold text-orange-900">Rata-rata: -</p>
+                            <span id="overall-badge" class="inline-flex items-center px-3 py-1 rounded-full bg-white/70 border border-orange-300 text-orange-800 font-semibold text-xs">Belum lengkap</span>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            
+            <footer class="w-full px-6 py-3 border-t border-orange-200 rounded-b-3xl bg-white/80 text-xs text-orange-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-1">
+                <p>Gunakan kuis ini untuk melatih pemahaman siswa kelas 2 SD dengan cara yang menyenangkan.</p>
+                <p class="text-[11px] md:text-xs text-orange-500">Spring Boot Quiz App</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        let subjects = {};
+        let userAnswers = {};
+        let subjectScores = {};
+        let subjectFinished = {};
+        let currentSubjectKey = '';
+        let showAnswersTemp = false;
+
+        // Load subjects from API
+        fetch('/api/subjects')
+            .then(response => response.json())
+            .then(data => {
+                subjects = data;
+                initializeQuiz();
+            });
+
+        function initializeQuiz() {
+            Object.keys(subjects).forEach(key => {
+                const len = subjects[key].questions.length;
+                userAnswers[key] = new Array(len).fill(null);
+                subjectScores[key] = null;
+                subjectFinished[key] = false;
+            });
+
+            if (Object.keys(subjects).length > 0) {
+                currentSubjectKey = Object.keys(subjects)[0];
+                renderTabs();
+                renderSubject(currentSubjectKey);
+                updateSummary();
+                setupEvents();
+            }
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('subject-tabs');
+            tabsContainer.innerHTML = '';
+            
+            Object.keys(subjects).forEach((key, index) => {
+                const button = document.createElement('button');
+                button.className = index === 0 
+                    ? 'tab-button focus-ring px-3 py-2 rounded-2xl text-xs md:text-sm font-semibold bg-orange-500 text-white shadow-md border border-orange-600'
+                    : 'tab-button focus-ring px-3 py-2 rounded-2xl text-xs md:text-sm font-semibold bg-orange-100 text-orange-800 border border-orange-200';
+                button.setAttribute('data-subject', key);
+                button.textContent = subjects[key].name;
+                tabsContainer.appendChild(button);
+            });
+        }
+
+        function renderSubject(subjectKey) {
+            currentSubjectKey = subjectKey;
+            const subject = subjects[subjectKey];
+            const questionsContainer = document.getElementById('questions-container');
+            const subjectTitle = document.getElementById('subject-title');
+            const subjectDesc = document.getElementById('subject-desc');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const subjectScoreText = document.getElementById('subject-score-text');
+
+            subjectTitle.textContent = subject.name;
+            subjectDesc.textContent = subject.description;
+
+            const answers = userAnswers[subjectKey];
+            const answeredCount = answers.filter(a => a !== null && a !== undefined).length;
+            const total = subject.questions.length;
+            const percent = (answeredCount / total) * 100;
+            progressBar.style.width = percent + '%';
+            progressText.textContent = answeredCount + ' / ' + total;
+
+            if (subjectScores[subjectKey] !== null) {
+                subjectScoreText.textContent = 'Nilai: ' + subjectScores[subjectKey];
+            } else {
+                subjectScoreText.textContent = 'Nilai: -';
+            }
+
+            questionsContainer.innerHTML = '';
+
+            subject.questions.forEach((q, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mb-3 px-3 py-3 rounded-2xl border border-orange-100 bg-orange-50/60';
+
+                const questionHeader = document.createElement('div');
+                questionHeader.className = 'flex items-start justify-between gap-2 mb-2';
+
+                const qText = document.createElement('p');
+                qText.className = 'text-sm md:text-base font-semibold text-orange-900';
+                qText.textContent = (index + 1) + '. ' + q.question;
+
+                const badge = document.createElement('span');
+                badge.className = 'inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold';
+                if (answers[index] !== null) {
+                    badge.textContent = 'Terjawab';
+                    badge.classList.add('bg-emerald-100', 'text-emerald-800', 'border', 'border-emerald-300');
+                } else {
+                    badge.textContent = 'Belum';
+                    badge.classList.add('bg-orange-100', 'text-orange-800', 'border', 'border-orange-200');
+                }
+
+                questionHeader.appendChild(qText);
+                questionHeader.appendChild(badge);
+                wrapper.appendChild(questionHeader);
+
+                const optionsWrapper = document.createElement('div');
+                optionsWrapper.className = 'flex flex-col gap-2 mt-1';
+
+                q.options.forEach((opt, optIndex) => {
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center gap-2 px-2 py-1.5 rounded-xl cursor-pointer transition-colors border';
+
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = subjectKey + '-q-' + index;
+                    input.className = 'focus-ring w-4 h-4 text-orange-500 border-orange-300';
+
+                    if (userAnswers[subjectKey][index] === optIndex) {
+                        input.checked = true;
+                    }
+
+                    input.addEventListener('change', () => {
+                        userAnswers[subjectKey][index] = optIndex;
+                        renderSubject(subjectKey);
+                        updateSummary();
+                    });
+
+                    const optionText = document.createElement('span');
+                    optionText.className = 'text-sm text-orange-900';
+                    optionText.textContent = String.fromCharCode(65 + optIndex) + '. ' + opt;
+
+                    if (showAnswersTemp) {
+                        if (optIndex === q.answer) {
+                            label.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+                        } else if (userAnswers[subjectKey][index] === optIndex && optIndex !== q.answer) {
+                            label.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-900');
+                        } else {
+                            label.classList.add('bg-white', 'border-orange-100', 'hover:bg-orange-50');
+                        }
+                    } else {
+                        label.classList.add('bg-white', 'border-orange-100', 'hover:bg-orange-50');
+                    }
+
+                    label.appendChild(input);
+                    label.appendChild(optionText);
+                    optionsWrapper.appendChild(label);
+                });
+
+                wrapper.appendChild(optionsWrapper);
+                questionsContainer.appendChild(wrapper);
+            });
+        }
+
+        function calculateScore(subjectKey) {
+            const subject = subjects[subjectKey];
+            const answers = userAnswers[subjectKey];
+            let correct = 0;
+            subject.questions.forEach((q, i) => {
+                if (answers[i] === q.answer) correct++;
+            });
+            const score = Math.round((correct / subject.questions.length) * 100);
+            return { score, correct, total: subject.questions.length };
+        }
+
+        function updateSummary() {
+            const summaryContainer = document.getElementById('summary-container');
+            const overallAverageText = document.getElementById('overall-average-text');
+            const overallBadge = document.getElementById('overall-badge');
+
+            summaryContainer.innerHTML = '';
+
+            let sumScore = 0;
+            let finishedCount = 0;
+            let nonNullCount = 0;
+
+            Object.keys(subjects).forEach(key => {
+                const sub = subjects[key];
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/80 border border-orange-100 shadow-sm';
+
+                const left = document.createElement('div');
+                left.className = 'flex flex-col';
+
+                const title = document.createElement('span');
+                title.className = 'text-sm font-semibold text-orange-900';
+                title.textContent = sub.name;
+
+                const status = document.createElement('span');
+                status.className = 'text-[11px] text-orange-700';
+                status.textContent = subjectFinished[key] ? 'Sudah dinilai' : 'Belum dinilai';
+
+                left.appendChild(title);
+                left.appendChild(status);
+
+                const right = document.createElement('div');
+                right.className = 'flex items-center gap-2';
+
+                const score = subjectScores[key];
+                const scoreSpan = document.createElement('span');
+                scoreSpan.className = 'text-sm font-semibold px-2 py-1 rounded-full';
+
+                if (score !== null) {
+                    scoreSpan.textContent = score;
+                    nonNullCount++;
+                    sumScore += score;
+
+                    if (score >= 90) {
+                        scoreSpan.classList.add('bg-emerald-100', 'text-emerald-800', 'border', 'border-emerald-300');
+                    } else if (score >= 75) {
+                        scoreSpan.classList.add('bg-amber-100', 'text-amber-800', 'border', 'border-amber-300');
+                    } else {
+                        scoreSpan.classList.add('bg-rose-100', 'text-rose-800', 'border', 'border-rose-300');
+                    }
+                } else {
+                    scoreSpan.textContent = '-';
+                    scoreSpan.classList.add('bg-orange-50', 'text-orange-600', 'border', 'border-orange-100');
+                }
+
+                const doneIcon = document.createElement('span');
+                doneIcon.className = 'inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold border';
+                if (subjectFinished[key]) {
+                    doneIcon.textContent = '✓';
+                    doneIcon.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-300');
+                    finishedCount++;
+                } else {
+                    doneIcon.textContent = '…';
+                    doneIcon.classList.add('bg-orange-50', 'text-orange-700', 'border-orange-200');
+                }
+
+                right.appendChild(scoreSpan);
+                right.appendChild(doneIcon);
+
+                div.appendChild(left);
+                div.appendChild(right);
+
+                summaryContainer.appendChild(div);
+            });
+
+            if (nonNullCount > 0) {
+                const avg = Math.round(sumScore / nonNullCount);
+                overallAverageText.textContent = 'Rata-rata: ' + avg;
+
+                if (finishedCount === Object.keys(subjects).length) {
+                    overallBadge.textContent = 'Semua mapel selesai';
+                } else {
+                    overallBadge.textContent = 'Belum semua mapel selesai (' + finishedCount + '/' + Object.keys(subjects).length + ')';
+                }
+            } else {
+                overallAverageText.textContent = 'Rata-rata: -';
+                overallBadge.textContent = 'Belum lengkap';
+            }
+        }
+
+        function setupEvents() {
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-button')) {
+                    const subjectKey = e.target.getAttribute('data-subject');
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.className = 'tab-button focus-ring px-3 py-2 rounded-2xl text-xs md:text-sm font-semibold bg-orange-100 text-orange-800 border border-orange-200';
+                    });
+                    e.target.className = 'tab-button focus-ring px-3 py-2 rounded-2xl text-xs md:text-sm font-semibold bg-orange-500 text-white shadow-md border border-orange-600';
+                    renderSubject(subjectKey);
+                }
+            });
+
+            document.getElementById('finish-subject-btn').addEventListener('click', () => {
+                const { score, correct, total } = calculateScore(currentSubjectKey);
+                subjectScores[currentSubjectKey] = score;
+                subjectFinished[currentSubjectKey] = true;
+
+                const subjectScoreText = document.getElementById('subject-score-text');
+                subjectScoreText.textContent = 'Nilai: ' + score + ' (' + correct + '/' + total + ' benar)';
+                updateSummary();
+            });
+
+            document.getElementById('reset-subject-btn').addEventListener('click', () => {
+                const len = subjects[currentSubjectKey].questions.length;
+                userAnswers[currentSubjectKey] = new Array(len).fill(null);
+                subjectScores[currentSubjectKey] = null;
+                subjectFinished[currentSubjectKey] = false;
+                showAnswersTemp = false;
+                renderSubject(currentSubjectKey);
+                updateSummary();
+            });
+
+            document.getElementById('show-answers-btn').addEventListener('click', () => {
+                showAnswersTemp = !showAnswersTemp;
+                document.getElementById('show-answers-btn').textContent = showAnswersTemp
+                    ? 'Sembunyikan Kunci'
+                    : 'Tampilkan Kunci Sementara';
+                renderSubject(currentSubjectKey);
+            });
+        }
+    </script>
+</body>
+</html>

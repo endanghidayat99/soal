@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Manajemen Soal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Manajemen Soal Kuis</h1>
+            <a href="/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Lihat Kuis</a>
+        </div>
+
+        <!-- Add Subject Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Tambah Mata Pelajaran</h2>
+            <form th:action="@{/admin/subjects}" method="post" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" name="code" placeholder="Kode (contoh: matematika)" required 
+                       class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" name="name" placeholder="Nama Mata Pelajaran" required
+                       class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" name="description" placeholder="Deskripsi"
+                       class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Tambah Mapel
+                </button>
+            </form>
+        </div>
+
+        <!-- Subjects List -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Daftar Mata Pelajaran</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left">Kode</th>
+                            <th class="px-4 py-2 text-left">Nama</th>
+                            <th class="px-4 py-2 text-left">Deskripsi</th>
+                            <th class="px-4 py-2 text-left">Jumlah Soal</th>
+                            <th class="px-4 py-2 text-left">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="subject : ${subjects}" class="border-b">
+                            <td class="px-4 py-2" th:text="${subject.code}"></td>
+                            <td class="px-4 py-2" th:text="${subject.name}"></td>
+                            <td class="px-4 py-2" th:text="${subject.description}"></td>
+                            <td class="px-4 py-2" th:text="${subject.questions != null ? subject.questions.size() : 0}"></td>
+                            <td class="px-4 py-2">
+                                <form th:action="@{/admin/subjects/{id}/delete(id=${subject.id})}" method="post" class="inline">
+                                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                                            onclick="return confirm('Yakin hapus mata pelajaran ini?')">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Question Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Tambah Soal</h2>
+            <form th:action="@{/admin/questions}" method="post" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mata Pelajaran:</label>
+                    <select name="subjectCode" required class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Pilih Mata Pelajaran</option>
+                        <option th:each="subject : ${subjects}" th:value="${subject.code}" th:text="${subject.name}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Pertanyaan:</label>
+                    <textarea name="question" required rows="3" 
+                              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Masukkan pertanyaan..."></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Pilihan A:</label>
+                        <input type="text" name="optionA" required 
+                               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Pilihan B:</label>
+                        <input type="text" name="optionB" required 
+                               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Pilihan C:</label>
+                        <input type="text" name="optionC" required 
+                               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Pilihan D:</label>
+                        <input type="text" name="optionD" required 
+                               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Jawaban Benar:</label>
+                    <select name="correctAnswer" required class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Pilih Jawaban Benar</option>
+                        <option value="0">A</option>
+                        <option value="1">B</option>
+                        <option value="2">C</option>
+                        <option value="3">D</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Tambah Soal
+                </button>
+            </form>
+        </div>
+
+        <!-- Questions List -->
+        <div class="bg-white rounded-lg shadow-md p-6 mt-8" th:if="${subjects != null and !subjects.empty}">
+            <h2 class="text-xl font-semibold mb-4">Daftar Soal</h2>
+            <div th:each="subject : ${subjects}" class="mb-6">
+                <h3 class="text-lg font-medium mb-2 text-blue-600" th:text="${subject.name}"></h3>
+                <div th:if="${subject.questions != null and !subject.questions.empty}" class="space-y-2">
+                    <div th:each="question, iterStat : ${subject.questions}" 
+                         class="border rounded p-3 bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-medium" th:text="${iterStat.count + '. ' + question.question}"></p>
+                                <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+                                    <span th:text="'A. ' + ${question.optionA}"></span>
+                                    <span th:text="'B. ' + ${question.optionB}"></span>
+                                    <span th:text="'C. ' + ${question.optionC}"></span>
+                                    <span th:text="'D. ' + ${question.optionD}"></span>
+                                </div>
+                                <p class="mt-1 text-sm text-green-600 font-medium">
+                                    Jawaban: <span th:text="${question.correctAnswer == 0 ? 'A' : (question.correctAnswer == 1 ? 'B' : (question.correctAnswer == 2 ? 'C' : 'D'))}"></span>
+                                </p>
+                            </div>
+                            <form th:action="@{/admin/questions/{id}/delete(id=${question.id})}" method="post" class="ml-4">
+                                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                                        onclick="return confirm('Yakin hapus soal ini?')">
+                                    Hapus
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <p th:if="${subject.questions == null or subject.questions.empty}" class="text-gray-500 italic">
+                    Belum ada soal untuk mata pelajaran ini.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
