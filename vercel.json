@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "src/main/java/id/endang/soal/SoalApplication.java": {
+      "runtime": "java17"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/src/main/java/id/endang/soal/SoalApplication.java"
+    }
+  ]
+}
